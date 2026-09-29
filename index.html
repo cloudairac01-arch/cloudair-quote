@@ -56,8 +56,6 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
 .tab[aria-pressed=true]{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
 .opts{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
 .opts input[type=search]{max-width:260px}
-.opts label{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--ink-2);cursor:pointer}
-.opts label input{width:auto;margin:0;accent-color:var(--ink)}
 
 /* product cards */
 .plist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -82,10 +80,6 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
 .stp input::-webkit-outer-spin-button,.stp input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .add{flex:1}
 .pc.in .add{background:var(--soft);border-color:var(--line-2);color:var(--ink);font-weight:600}
-.pc.off{background:#fbfbfa}
-.pc.off .pc-tt h3{color:var(--ink-2)}
-.na{font-size:13px;color:var(--ink-3);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-top:2px}
-.na button{background:none;border:none;padding:0;font-size:13px;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .empty-list{grid-column:1/-1;padding:40px 0;text-align:center;color:var(--ink-3)}
 
 /* cart */
@@ -174,7 +168,6 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
     <div class="bar"><nav class="tabs" id="tabs" aria-label="분류"></nav></div>
     <div class="opts">
       <input type="search" id="q" placeholder="서비스 이름 검색" aria-label="서비스 검색">
-      <label><input type="checkbox" id="onlySale">구매 가능한 것만</label>
     </div>
     <div class="plist" id="plist"></div>
   </main>
@@ -238,10 +231,9 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
   var M = D.meta, FEE = M.feeRate || 0;
   var fx = { USD: M.fxFallback.USD, EUR: M.fxFallback.EUR, KRW: 1 };
   var fxLive = false, fxDate = M.updatedAt;
-  var cart = {}, months = 12, cat = '전체', kw = '', onlySale = false;
+  var cart = {}, months = 12, cat = '전체', kw = '';
 
   var BUY = { sale: true, prereq: true };
-  var NA  = { bundle_only: '단독 구매 불가', blocked: '현재 구매 불가', review: '가격 확인 중' };
 
   (function(a){ if(a && M.company && M.company.email){ a.href = 'mailto:' + M.company.email; a.textContent = M.company.email; } })($('footMail'));
 
@@ -251,7 +243,7 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
   function canBuy(p){ return BUY[p.status] && p.plans && p.plans.length; }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function logo(p, sm){
-    var img = p.domain ? '<img src="https://www.google.com/s2/favicons?domain=' + p.domain + '&sz=128" alt="" loading="lazy" onerror="this.remove()">' : '';
+    var img = p.logo ? '<img src="' + esc(p.logo) + '" alt="" loading="lazy" onerror="this.remove()">' : '';
     return '<span class="lg' + (sm ? ' sm' : '') + '" aria-hidden="true"><b>' + esc(p.name.charAt(0)) + '</b>' + img + '</span>';
   }
 
@@ -289,7 +281,7 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
     var items = D.products.filter(function(p){
       if(cat !== '전체' && p.category !== cat) return false;
       if(kw && (p.name + ' ' + p.vendor + ' ' + p.use).toLowerCase().indexOf(kw) < 0) return false;
-      if(onlySale && !canBuy(p)) return false;
+      if(!canBuy(p)) return false;
       return true;
     });
     if(!items.length){ $('plist').innerHTML = '<p class="empty-list">찾는 서비스가 없습니다.</p>'; return; }
@@ -299,11 +291,6 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
         '<div class="pc-hd">' + logo(p) + '<div class="pc-tt"><h3>' + esc(p.name) + '</h3><p>' + esc(p.vendor) + '</p></div></div>'
         + '<p class="pc-use">' + esc(p.use) + '</p>';
 
-      if(!canBuy(p)){
-        var alt = p.altId ? byId(p.altId) : null;
-        return '<article class="pc off">' + head + '<div class="na">' + (NA[p.status] || '현재 구매 불가')
-          + (alt ? '<button data-goto="' + alt.id + '">' + esc(alt.name) + ' 구독에 포함</button>' : '') + '</div></article>';
-      }
       var pi = c ? c.planIdx : 0, q = c ? c.qty : 1;
       return '<article class="pc' + (c ? ' in' : '') + '">' + head
         + '<select data-plan="' + p.id + '" aria-label="' + esc(p.name) + ' 플랜">'
@@ -331,9 +318,6 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
       var id = t.dataset.add, sel = $('plist').querySelector('[data-plan="' + id + '"]');
       cart[id] = { planIdx: +sel.value || 0, qty: clampQty(qtyInput(id).value) };
       list(); render();
-    } else if(t.dataset.goto){
-      var a = byId(t.dataset.goto); cat = '전체'; kw = a.name.toLowerCase(); $('q').value = a.name;
-      tabs(); list(); window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   });
   $('plist').addEventListener('change', function(e){
@@ -446,7 +430,6 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
   });
 
   $('q').addEventListener('input', function(){ kw = this.value.trim().toLowerCase(); list(); });
-  $('onlySale').addEventListener('change', function(){ onlySale = this.checked; list(); });
 
   tabs(); list(); render(); loadFx();
 })();
