@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 구독 견적 계산 | 클라우드에어</title>
+<meta name="description" content="필요한 AI 구독을 선택하면 원화 견적이 바로 계산됩니다. 청주대학교 AI 구독 구매대행 — 클라우드에어">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16202b; --ink-2:#5a6b7b; --ink-3:#8b9aa8;
+  --line:#e3e8ed; --line-2:#cfd7de;
+  --bg:#f6f8fa; --card:#ffffff;
+  --brand:#1b5e9c; --brand-bg:#eaf2fa;
+  --ok:#1d7a52; --ok-bg:#e7f4ee;
+  --warn:#8a5a06; --warn-bg:#fdf2e0;
+  --stop:#a32d2d; --stop-bg:#fbeceb;
+  --r:10px;
+  --max:1180px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
+  background:var(--bg);color:var(--ink);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:500;line-height:1.35}
+a{color:var(--brand)}
+button{font-family:inherit;font-size:14px;cursor:pointer;border-radius:var(--r);
+  border:1px solid var(--line-2);background:#fff;color:var(--ink);padding:9px 14px;transition:.12s}
+button:hover{background:#f2f5f8;border-color:var(--ink-3)}
+button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+button.primary:hover{background:#17527f}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select{font-family:inherit;font-size:14px;color:var(--ink);background:#fff;
+  border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;width:100%}
+input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-bg)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
+
+/* header */
+header{background:#fff;border-bottom:1px solid var(--line)}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0;flex-wrap:wrap}
+.logo{font-size:19px;font-weight:700;letter-spacing:-.3px}
+.logo span{font-weight:400;font-size:13px;color:var(--ink-2);margin-left:8px;letter-spacing:0}
+.fxbox{font-size:12.5px;color:var(--ink-2);text-align:right}
+.fxbox b{font-weight:500;color:var(--ink)}
+.hero{padding:26px 0 18px}
+.hero h1{font-size:25px;letter-spacing:-.5px}
+.hero p{margin:8px 0 0;color:var(--ink-2);font-size:14.5px}
+
+/* layout */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px;align-items:start;padding-bottom:60px}
+@media(max-width:940px){.grid{grid-template-columns:1fr}}
+
+/* toolbar */
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.tools input[type=search]{max-width:230px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.chip{font-size:13px;padding:6px 12px;border-radius:999px;border:1px solid var(--line-2);
+  background:#fff;color:var(--ink-2);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* product card */
+.plist{display:grid;gap:10px}
+.pc{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.pc.off{background:#fafbfc}
+.pc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.pc-nm{font-size:15.5px;font-weight:500}
+.pc-nm em{font-style:normal;font-size:12.5px;color:var(--ink-3);font-weight:400;margin-left:7px}
+.pc-use{font-size:13px;color:var(--ink-2);margin-top:3px}
+.pc-note{font-size:12.5px;margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--warn-bg);color:var(--warn)}
+.pc-note.stop{background:var(--stop-bg);color:var(--stop)}
+.pc-ctl{display:grid;grid-template-columns:minmax(0,1fr) 88px 92px;gap:8px;align-items:center;margin-top:12px}
+@media(max-width:560px){.pc-ctl{grid-template-columns:1fr 1fr}}
+.badge{font-size:11.5px;padding:3px 9px;border-radius:999px;white-space:nowrap;font-weight:500}
+.b-ok{background:var(--ok-bg);color:var(--ok)}
+.b-warn{background:var(--warn-bg);color:var(--warn)}
+.b-stop{background:var(--stop-bg);color:var(--stop)}
+.b-info{background:var(--brand-bg);color:var(--brand)}
+.price{font-size:13.5px;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums}
+.price b{display:block;font-size:15px;color:var(--ink);font-weight:500}
+.linkish{background:none;border:none;color:var(--brand);padding:0;font-size:12.5px;text-decoration:underline}
+
+/* cart */
+.cart{position:sticky;top:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.cart h2{font-size:16px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.ci{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:11px 16px;border-bottom:1px solid var(--line);font-size:13.5px}
+.ci-nm{font-weight:500}
+.ci-sub{font-size:12px;color:var(--ink-3);margin-top:2px}
+.ci-amt{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ci-x{background:none;border:none;color:var(--ink-3);font-size:12px;padding:2px 0;text-decoration:underline}
+.empty{padding:26px 16px;text-align:center;color:var(--ink-3);font-size:13.5px}
+.sumrow{display:flex;justify-content:space-between;padding:6px 16px;font-size:13.5px;color:var(--ink-2)}
+.sumrow b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+.total{display:flex;justify-content:space-between;align-items:baseline;padding:13px 16px;border-top:1px solid var(--line);margin-top:6px}
+.total span{font-size:13.5px;color:var(--ink-2)}
+.total b{font-size:23px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.term{display:flex;gap:6px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.term button{flex:1;padding:7px 0;font-size:13px}
+.term button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.cart-act{padding:14px 16px;display:grid;gap:8px}
+.foot-note{font-size:11.5px;color:var(--ink-3);padding:0 16px 14px;line-height:1.55}
+
+/* form */
+.cust{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:14px}
+.cust h3{font-size:14.5px;margin-bottom:10px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.lb{font-size:12.5px;color:var(--ink-2);display:block;margin-bottom:4px}
+.err{color:var(--stop);font-size:12.5px;margin-top:8px}
+
+/* quote sheet */
+#sheetWrap{display:none;position:fixed;inset:0;background:rgba(22,32,43,.55);z-index:50;overflow:auto;padding:24px 14px}
+#sheetWrap.on{display:block}
+.sheet{background:#fff;max-width:760px;margin:0 auto;border-radius:var(--r);padding:34px 38px}
+.sheet h2{font-size:22px;letter-spacing:4px;text-align:center;margin-bottom:22px}
+.sheet table{width:100%;border-collapse:collapse;font-size:13px}
+.sheet th,.sheet td{border:1px solid var(--line-2);padding:8px 10px;text-align:left}
+.sheet th{background:#f4f7fa;font-weight:500}
+.sheet td.n{text-align:right;font-variant-numeric:tabular-nums}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:13px;margin-bottom:18px}
+.meta div p{margin:2px 0}
+.sheet-act{max-width:760px;margin:14px auto 0;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+@media print{
+  body{background:#fff}
+  header,.hero,.grid,.sheet-act{display:none!important}
+  #sheetWrap{display:block!important;position:static;background:#fff;padding:0;overflow:visible}
+  .sheet{max-width:none;padding:0;border-radius:0}
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hd">
+    <div class="logo">클라우드에어<span>청주대학교 AI 구독 구매대행</span></div>
+    <div class="fxbox" id="fxbox">환율 불러오는 중…</div>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <h1>필요한 AI 구독을 고르면 견적이 바로 나옵니다</h1>
+  <p>플랜과 계정 수를 선택하시면 원화 기준 총액이 실시간으로 계산됩니다. 결제·계정 개설·세금계산서 발행까지 대행합니다.</p>
+</div>
+
+<div class="wrap grid">
+  <main>
+    <div class="tools">
+      <input type="search" id="q" placeholder="서비스 이름으로 검색" aria-label="서비스 검색">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink-2);white-space:nowrap">
+        <input type="checkbox" id="onlySale" style="width:auto"> 지금 구매 가능한 것만
+      </label>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="분류 필터"></div>
+    <div class="plist" id="plist"></div>
+    <p id="noRes" style="display:none;color:var(--ink-3);font-size:14px;padding:20px 0">조건에 맞는 서비스가 없습니다.</p>
+  </main>
+
+  <aside>
+    <div class="cart">
+      <h2>견적 담기 <span id="cnt" style="font-weight:400;color:var(--ink-3);font-size:13px"></span></h2>
+      <div class="term" role="group" aria-label="구독 기간">
+        <button data-mo="1" aria-pressed="false">1개월</button>
+        <button data-mo="3" aria-pressed="false">3개월</button>
+        <button data-mo="6" aria-pressed="false">6개월</button>
+        <button data-mo="12" aria-pressed="true">12개월</button>
+      </div>
+      <div id="cartList"><p class="empty">왼쪽에서 필요한 서비스를 담아주세요</p></div>
+      <div id="sums" style="padding:10px 0 4px"></div>
+      <div class="total"><span>견적 총액 (VAT 포함)</span><b id="tot">0원</b></div>
+      <div class="cart-act">
+        <button class="primary" id="btnSheet">견적서 확인하기</button>
+        <button id="btnCopy">견적 내용 복사</button>
+      </div>
+      <p class="foot-note" id="fxNote"></p>
+    </div>
+
+    <div class="cust">
+      <h3>견적 받으실 분</h3>
+      <div class="f2">
+        <div><label class="lb" for="cName">성명 / 직위</label><input id="cName" placeholder="이해영 교수"></div>
+        <div><label class="lb" for="cOrg">소속</label><input id="cOrg" placeholder="청주대학교"></div>
+      </div>
+      <div style="margin-top:9px"><label class="lb" for="cMail">이메일</label><input id="cMail" type="email" placeholder="name@cju.ac.kr"></div>
+      <div style="margin-top:9px"><label class="lb" for="cTel">연락처 (선택)</label><input id="cTel" placeholder="010-0000-0000"></div>
+      <div id="formErr" class="err" style="display:none"></div>
+    </div>
+  </aside>
+</div>
+
+<div id="sheetWrap" role="dialog" aria-modal="true" aria-label="견적서">
+  <div class="sheet" id="sheet"></div>
+  <div class="sheet-act">
+    <button id="btnPrint">인쇄 / PDF 저장</button>
+    <button id="btnMail">이메일로 견적 요청</button>
+    <button id="btnClose">닫기</button>
+  </div>
+</div>
+
+<footer style="border-top:1px solid var(--line);background:#fff">
+  <div class="wrap" style="padding:20px 20px 28px;font-size:12.5px;color:var(--ink-3);line-height:1.7">
+    <b style="color:var(--ink-2);font-weight:500">클라우드에어</b> · 청주대학교 AI 구독 구매대행<br>
+    본 견적은 참고용 자동 산출 금액이며, 최종 금액은 담당자 확인 후 확정됩니다.
+    문의 <a id="footMail" href="mailto:swca06@go.makers-ai.kr">swca06@go.makers-ai.kr</a>
+  </div>
+</footer>
+
+<script src="products.js"></script>
+<script>
+(function(){
+  var D = window.CA_DATA;
+  if(!D){document.getElementById('plist').innerHTML='<div class="pc"><b>상품 데이터를 불러오지 못했습니다.</b><p class="pc-use">products.js 파일이 index.html 과 같은 폴더에 있는지 확인해 주세요.</p></div>';return}
+
+  var M = D.meta, FEE = M.feeRate, VAT = M.vatRate;
+  (function(a){ if(a && M.company && M.company.email){ a.href='mailto:'+M.company.email; a.textContent=M.company.email; } })(document.getElementById('footMail'));
+  var fx = {USD:M.fxFallback.USD, EUR:M.fxFallback.EUR, KRW:1};
+  var fxLive = false, fxDate = M.updatedAt;
+  var cart = {};              // id -> {planIdx, qty}
+  var months = 12;
+  var cat = '전체', kw = '', onlySale = false;
+
+  var STATUS = {
+    sale:        {label:'판매중',        cls:'b-ok',   buy:true},
+    prereq:      {label:'선행조건 있음', cls:'b-warn', buy:true},
+    bundle_only: {label:'단독 구매 불가', cls:'b-stop', buy:false},
+    blocked:     {label:'결제 차단',     cls:'b-stop', buy:false},
+    review:      {label:'조사 필요',     cls:'b-info', buy:false}
+  };
+
+  function won(n){return Math.round(n).toLocaleString('ko-KR')+'원'}
+  function stale(){
+    var d = new Date(M.updatedAt+'T00:00:00');
+    return (Date.now()-d.getTime())/86400000 > (M.staleDays||30);
+  }
+  function unit(p, plan){                       // 고객 판매가 (대행 수수료 포함, VAT 별도)
+    return Math.round(plan.p * fx[p.cur] * (1+FEE));
+  }
+  function byId(id){for(var i=0;i<D.products.length;i++)if(D.products[i].id===id)return D.products[i];return null}
+
+  /* ── 환율 실시간 조회 ───────────────────── */
+  function loadFx(){
+    var box = document.getElementById('fxbox');
+    fetch('https://open.er-api.com/v6/latest/USD')
+      .then(function(r){return r.json()})
+      .then(function(j){
+        if(!j || !j.rates || !j.rates.KRW) throw 0;
+        fx.USD = j.rates.KRW;
+        fx.EUR = j.rates.EUR ? (j.rates.KRW / j.rates.EUR) : M.fxFallback.EUR;
+        fxLive = true;
+        if(j.time_last_update_utc) fxDate = new Date(j.time_last_update_utc).toISOString().slice(0,10);
+        paint(); render();
+      })
+      .catch(function(){ fxLive=false; paint(); render(); });
+
+    function paint(){
+      box.innerHTML = '적용 환율 <b>1 USD = '+Math.round(fx.USD).toLocaleString('ko-KR')+'원</b>'
+        + ' · <b>1 EUR = '+Math.round(fx.EUR).toLocaleString('ko-KR')+'원</b><br>'
+        + (fxLive ? '실시간 조회 · 기준 '+fxDate : '실시간 조회 실패 — 기준 환율 적용');
+      document.getElementById('fxNote').innerHTML =
+        '· 표시 금액은 구매대행 수수료가 포함된 판매가이며, 부가세는 별도 합산됩니다.<br>'
+        + '· 해외 서비스는 결제 시점 환율에 따라 최종 금액이 소폭 달라질 수 있습니다.<br>'
+        + '· 단가 기준일 ' + M.updatedAt + (stale() ? ' — 갱신이 필요한 항목이 있을 수 있습니다.' : '');
+    }
+    paint();
+  }
+
+  /* ── 상품 목록 ─────────────────────────── */
+  function chips(){
+    var all = ['전체'].concat(D.categories);
+    document.getElementById('chips').innerHTML = all.map(function(c){
+      return '<button class="chip" data-cat="'+c+'" aria-pressed="'+(c===cat)+'">'+c+'</button>';
+    }).join('');
+    document.querySelectorAll('[data-cat]').forEach(function(b){
+      b.addEventListener('click', function(){ cat=b.dataset.cat; chips(); list(); });
+    });
+  }
+
+  function list(){
+    var host = document.getElementById('plist');
+    var items = D.products.filter(function(p){
+      if(cat!=='전체' && p.category!==cat) return false;
+      if(kw && (p.name+' '+p.vendor+' '+p.use).toLowerCase().indexOf(kw)<0) return false;
+      if(onlySale && !STATUS[p.status].buy) return false;
+      return true;
+    });
+    document.getElementById('noRes').style.display = items.length ? 'none' : 'block';
+
+    host.innerHTML = items.map(function(p){
+      var st = STATUS[p.status], buy = st.buy && p.plans.length;
+      var cur = cart[p.id], pi = cur ? cur.planIdx : 0;
+      var alt = p.altId ? byId(p.altId) : null;
+
+      var ctl = buy
+        ? '<div class="pc-ctl">'
+          + '<select data-plan="'+p.id+'" aria-label="'+p.name+' 플랜">'
+          + p.plans.map(function(pl,i){
+              return '<option value="'+i+'"'+(i===pi?' selected':'')+'>'+pl.n+' — '+won(unit(p,pl))+' / 월</option>';
+            }).join('')
+          + '</select>'
+          + '<input type="number" min="1" max="99" step="1" value="'+(cur?cur.qty:1)+'" data-qty="'+p.id+'" aria-label="'+p.name+' 계정 수">'
+          + '<button data-add="'+p.id+'" class="'+(cur?'':'primary')+'">'+(cur?'담김':'담기')+'</button>'
+          + '</div>'
+        : '';
+
+      var note = '';
+      if(p.status==='bundle_only' || p.status==='blocked' || p.status==='review'){
+        note = '<div class="pc-note stop">'+ (p.note||'현재 견적에 담을 수 없습니다.')
+             + (alt ? ' <button class="linkish" data-goto="'+alt.id+'">'+alt.name+' 보기</button>' : '') +'</div>';
+      } else if(p.note){
+        note = '<div class="pc-note">'+p.note+'</div>';
+      }
+
+      return '<div class="pc'+(buy?'':' off')+'">'
+        + '<div class="pc-top"><div>'
+        + '<div class="pc-nm">'+p.name+'<em>'+p.vendor+'</em></div>'
+        + '<div class="pc-use">'+p.use+'</div>'
+        + '<div class="pc-use" style="color:var(--ink-3);font-size:12.5px">'+p.account+'</div>'
+        + '</div><span class="badge '+st.cls+'">'+st.label+'</span></div>'
+        + note + ctl + '</div>';
+    }).join('');
+
+    host.querySelectorAll('[data-add]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var id=b.dataset.add, p=byId(id);
+        var sel=host.querySelector('[data-plan="'+id+'"]'), qi=host.querySelector('[data-qty="'+id+'"]');
+        var q=Math.max(1,Math.min(99,parseInt(qi.value,10)||1)); qi.value=q;
+        cart[id]={planIdx:parseInt(sel.value,10)||0, qty:q};
+        list(); render();
+      });
+    });
+    host.querySelectorAll('[data-plan]').forEach(function(s){
+      s.addEventListener('change', function(){
+        var id=s.dataset.plan;
+        if(cart[id]){cart[id].planIdx=parseInt(s.value,10)||0; render();}
+      });
+    });
+    host.querySelectorAll('[data-qty]').forEach(function(i){
+      i.addEventListener('input', function(){
+        var id=i.dataset.qty, q=Math.max(1,Math.min(99,parseInt(i.value,10)||1));
+        if(cart[id]){cart[id].qty=q; render();}
+      });
+    });
+    host.querySelectorAll('[data-goto]').forEach(function(b){
+      b.addEventListener('click', function(){
+        cat='전체'; kw=b.dataset.goto===''?'':byId(b.dataset.goto).name.toLowerCase();
+        document.getElementById('q').value=byId(b.dataset.goto).name;
+        chips(); list(); window.scrollTo({top:0,behavior:'smooth'});
+      });
+    });
+  }
+
+  /* ── 견적 계산 ─────────────────────────── */
+  function lines(){
+    var out=[];
+    Object.keys(cart).forEach(function(id){
+      var p=byId(id); if(!p) return;
+      var c=cart[id], pl=p.plans[c.planIdx]; if(!pl) return;
+      var u=unit(p,pl);
+      out.push({p:p, plan:pl.n, qty:c.qty, unit:u, monthly:u*c.qty, sub:u*c.qty*months});
+    });
+    return out;
+  }
+
+  function render(){
+    var L=lines(), host=document.getElementById('cartList');
+    document.getElementById('cnt').textContent = L.length ? L.length+'건' : '';
+
+    if(!L.length){
+      host.innerHTML='<p class="empty">왼쪽에서 필요한 서비스를 담아주세요</p>';
+      document.getElementById('sums').innerHTML='';
+      document.getElementById('tot').textContent='0원';
+      return;
+    }
+    host.innerHTML = L.map(function(l){
+      return '<div class="ci"><div>'
+        + '<div class="ci-nm">'+l.p.name+'</div>'
+        + '<div class="ci-sub">'+l.plan+' · '+l.qty+'계정 · '+months+'개월</div>'
+        + '<button class="ci-x" data-del="'+l.p.id+'">삭제</button>'
+        + '</div><div class="ci-amt">'+won(l.sub)+'</div></div>';
+    }).join('');
+    host.querySelectorAll('[data-del]').forEach(function(b){
+      b.addEventListener('click', function(){ delete cart[b.dataset.del]; list(); render(); });
+    });
+
+    var sup=L.reduce(function(a,l){return a+l.sub},0);
+    var vat=Math.round(sup*VAT);
+    document.getElementById('sums').innerHTML =
+      '<div class="sumrow"><span>월 합계</span><b>'+won(L.reduce(function(a,l){return a+l.monthly},0))+'</b></div>'
+      + '<div class="sumrow"><span>공급가액 ('+months+'개월)</span><b>'+won(sup)+'</b></div>'
+      + '<div class="sumrow"><span>부가세 10%</span><b>'+won(vat)+'</b></div>';
+    document.getElementById('tot').textContent = won(sup+vat);
+  }
+
+  /* ── 견적서 ────────────────────────────── */
+  function quoteNo(){
+    var d=new Date(), p=function(n){return ('0'+n).slice(-2)};
+    return 'CA-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+String(Math.floor(Math.random()*900)+100);
+  }
+  var QNO = quoteNo();
+
+  function cust(){
+    return {
+      name:document.getElementById('cName').value.trim(),
+      org:document.getElementById('cOrg').value.trim(),
+      mail:document.getElementById('cMail').value.trim(),
+      tel:document.getElementById('cTel').value.trim()
+    };
+  }
+  function validate(){
+    var e=document.getElementById('formErr'), L=lines(), c=cust();
+    var msg='';
+    if(!L.length) msg='견적에 담은 서비스가 없습니다.';
+    else if(!c.name) msg='성명을 입력해 주세요.';
+    else if(!c.org) msg='소속을 입력해 주세요.';
+    else if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.mail)) msg='이메일 형식을 확인해 주세요.';
+    e.style.display = msg?'block':'none'; e.textContent = msg;
+    return !msg;
+  }
+  ['cName','cOrg','cMail'].forEach(function(id){
+    document.getElementById(id).addEventListener('input',function(){
+      document.getElementById('formErr').style.display='none';
+    });
+  });
+
+  function buildSheet(){
+    var L=lines(), c=cust();
+    var sup=L.reduce(function(a,l){return a+l.sub},0), vat=Math.round(sup*VAT);
+    var today=new Date().toISOString().slice(0,10);
+    var cond=L.filter(function(l){return l.p.status==='prereq'});
+
+    document.getElementById('sheet').innerHTML =
+      '<h2>견 적 서</h2>'
+      + '<div class="meta"><div>'
+        + '<p><b>수신</b> '+c.org+' '+c.name+'</p>'
+        + '<p><b>이메일</b> '+c.mail+'</p>'
+        + (c.tel?'<p><b>연락처</b> '+c.tel+'</p>':'')
+      + '</div><div>'
+        + '<p><b>공급자</b> '+M.company.name+'</p>'
+        + '<p><b>견적번호</b> '+QNO+'</p>'
+        + '<p><b>견적일</b> '+today+'</p>'
+        + '<p><b>유효기간</b> 견적일로부터 14일</p>'
+      + '</div></div>'
+      + '<table><thead><tr><th style="width:30%">서비스</th><th>플랜</th>'
+        + '<th style="width:12%">계정</th><th style="width:16%">월 단가</th><th style="width:20%">금액</th></tr></thead><tbody>'
+      + L.map(function(l){
+          return '<tr><td>'+l.p.name+'</td><td>'+l.plan+'</td><td class="n">'+l.qty+'</td>'
+            + '<td class="n">'+won(l.unit)+'</td><td class="n">'+won(l.sub)+'</td></tr>';
+        }).join('')
+      + '<tr><th colspan="4">공급가액 ('+months+'개월)</th><td class="n">'+won(sup)+'</td></tr>'
+      + '<tr><th colspan="4">부가세 (10%)</th><td class="n">'+won(vat)+'</td></tr>'
+      + '<tr><th colspan="4">합계 금액</th><td class="n"><b>'+won(sup+vat)+'</b></td></tr>'
+      + '</tbody></table>'
+      + '<p style="font-size:12px;color:#5a6b7b;margin-top:16px;line-height:1.7">'
+        + '· 적용 환율 1 USD = '+Math.round(fx.USD).toLocaleString('ko-KR')+'원 (기준 '+fxDate+'). 해외 결제 서비스는 결제일 환율에 따라 최종 금액이 조정될 수 있습니다.<br>'
+        + '· 금액에는 계정 개설·결제·갱신 관리 대행이 포함됩니다. 세금계산서를 발행합니다.<br>'
+        + '· 공급사의 정책 변경으로 인한 기능·가격·서비스 구조 변경에 대해 판매사는 책임지지 않습니다.'
+        + (cond.length ? '<br>· 선행조건 안내: ' + cond.map(function(l){return l.p.name+' — '+(l.p.note||'조건 확인 필요')}).join(' / ') : '')
+      + '</p>';
+  }
+
+  function textQuote(){
+    var L=lines(), c=cust();
+    var sup=L.reduce(function(a,l){return a+l.sub},0), vat=Math.round(sup*VAT);
+    var s='[AI 구독 견적 요청]\n견적번호 '+QNO+'\n';
+    s+='수신 '+c.org+' '+c.name+' ('+c.mail+(c.tel?' / '+c.tel:'')+')\n구독기간 '+months+'개월\n\n';
+    L.forEach(function(l){ s+='- '+l.p.name+' '+l.plan+' / '+l.qty+'계정 / 월 '+won(l.unit)+' / 소계 '+won(l.sub)+'\n'; });
+    s+='\n공급가액 '+won(sup)+'\n부가세 '+won(vat)+'\n합계 '+won(sup+vat)+'\n';
+    s+='적용환율 1 USD = '+Math.round(fx.USD).toLocaleString('ko-KR')+'원 (기준 '+fxDate+')\n';
+    return s;
+  }
+
+  document.getElementById('btnSheet').addEventListener('click', function(){
+    if(!validate()){document.getElementById('formErr').scrollIntoView({block:'center',behavior:'smooth'});return}
+    buildSheet(); document.getElementById('sheetWrap').classList.add('on');
+  });
+  document.getElementById('btnClose').addEventListener('click', function(){
+    document.getElementById('sheetWrap').classList.remove('on');
+  });
+  document.getElementById('sheetWrap').addEventListener('click', function(e){
+    if(e.target.id==='sheetWrap') this.classList.remove('on');
+  });
+  document.getElementById('btnPrint').addEventListener('click', function(){ window.print(); });
+  document.getElementById('btnMail').addEventListener('click', function(){
+    var c=cust();
+    var href='mailto:'+M.company.email+'?subject='+encodeURIComponent('[견적요청] '+(c.org||'')+' '+(c.name||'')+' — '+QNO)
+      +'&body='+encodeURIComponent(textQuote());
+    window.location.href=href;
+  });
+  document.getElementById('btnCopy').addEventListener('click', function(){
+    if(!validate()){document.getElementById('formErr').scrollIntoView({block:'center',behavior:'smooth'});return}
+    var t=textQuote(), b=this;
+    function done(){b.textContent='복사했습니다';setTimeout(function(){b.textContent='견적 내용 복사'},1600)}
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(done,fallback); }
+    else fallback();
+    function fallback(){
+      var ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try{document.execCommand('copy'); done();}catch(e){alert(t);}
+      document.body.removeChild(ta);
+    }
+  });
+
+  document.querySelectorAll('[data-mo]').forEach(function(b){
+    b.addEventListener('click', function(){
+      months=parseInt(b.dataset.mo,10);
+      document.querySelectorAll('[data-mo]').forEach(function(x){x.setAttribute('aria-pressed', x===b)});
+      render();
+    });
+  });
+  document.getElementById('q').addEventListener('input', function(){ kw=this.value.trim().toLowerCase(); list(); });
+  document.getElementById('onlySale').addEventListener('change', function(){ onlySale=this.checked; list(); });
+
+  chips(); list(); render(); loadFx();
+})();
+</script>
+</body>
+</html>
