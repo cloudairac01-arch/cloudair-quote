@@ -81,6 +81,10 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
 .add{flex:1;height:40px}
 .pc.in .add{background:var(--soft);border-color:var(--line-2);color:var(--ink);font-weight:600}
 .empty-list{grid-column:1/-1;padding:40px 0;text-align:center;color:var(--ink-3)}
+.pager{display:flex;justify-content:center;gap:6px;margin-top:20px}
+.pager button{min-width:38px;height:38px;padding:0 10px;font-size:14px;color:var(--ink-2)}
+.pager button[aria-current=page]{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+.pager button:disabled{opacity:.35;cursor:default}
 
 /* request list */
 .side{position:sticky;top:20px;display:flex;flex-direction:column;gap:12px}
@@ -132,6 +136,7 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
       <input type="search" id="q" placeholder="서비스 이름 검색" aria-label="서비스 검색">
     </div>
     <div class="plist" id="plist"></div>
+    <nav class="pager" id="pager" aria-label="페이지"></nav>
   </main>
 
   <aside class="side">
@@ -171,8 +176,8 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
   if(!D){ $('plist').innerHTML = '<p class="empty-list">상품 데이터를 불러오지 못했습니다. products.js 가 index.html 과 같은 폴더에 있는지 확인해 주세요.</p>'; return; }
 
   var M = D.meta, MAIL = (M.company && M.company.email) || '';
-  var LIM = { qty: [1, 99], mo: [1, 36] }, DEF_MO = 12;
-  var cart = {}, cat = '전체', kw = '';
+  var LIM = { qty: [1, 99], mo: [1, 36] }, DEF_MO = 1, PER = 6;
+  var cart = {}, cat = '전체', kw = '', page = 1;
   var BUY = { sale: true, prereq: true };
 
   (function(a){ if(a && MAIL){ a.href = 'mailto:' + MAIL; a.textContent = MAIL; } })($('footMail'));
@@ -201,7 +206,7 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
   }
   $('tabs').addEventListener('click', function(e){
     var b = e.target.closest('[data-cat]'); if(!b) return;
-    cat = b.dataset.cat; tabs(); list();
+    cat = b.dataset.cat; page = 1; tabs(); list();
   });
 
   /* 상품 목록 */
@@ -212,7 +217,12 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
       if(kw && (p.name + ' ' + p.vendor + ' ' + p.use).toLowerCase().indexOf(kw) < 0) return false;
       return true;
     });
-    if(!items.length){ $('plist').innerHTML = '<p class="empty-list">찾는 서비스가 없습니다.</p>'; return; }
+    if(!items.length){ $('plist').innerHTML = '<p class="empty-list">찾는 서비스가 없습니다.</p>'; $('pager').innerHTML = ''; return; }
+
+    var pages = Math.ceil(items.length / PER);
+    page = Math.max(1, Math.min(page, pages));
+    pager(pages);
+    items = items.slice((page - 1) * PER, page * PER);
 
     $('plist').innerHTML = items.map(function(p){
       var c = cart[p.id], pi = c ? c.planIdx : 0;
@@ -226,6 +236,20 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
         + '<button type="button" class="add" data-add="' + p.id + '">' + (c ? '담김' : '담기') + '</button></div></article>';
     }).join('');
   }
+
+  function pager(pages){
+    if(pages < 2){ $('pager').innerHTML = ''; return; }
+    var h = '<button type="button" data-pg="' + (page - 1) + '"' + (page === 1 ? ' disabled' : '') + ' aria-label="이전 페이지">‹</button>';
+    for(var i = 1; i <= pages; i++) h += '<button type="button" data-pg="' + i + '"' + (i === page ? ' aria-current="page"' : '') + '>' + i + '</button>';
+    h += '<button type="button" data-pg="' + (page + 1) + '"' + (page === pages ? ' disabled' : '') + ' aria-label="다음 페이지">›</button>';
+    $('pager').innerHTML = h;
+  }
+  $('pager').addEventListener('click', function(e){
+    var b = e.target.closest('[data-pg]'); if(!b || b.disabled) return;
+    page = +b.dataset.pg; list();
+    var top = document.querySelector('.bar').getBoundingClientRect().top;
+    if(top < 0) window.scrollBy({ top: top - 12, behavior: 'smooth' });
+  });
 
   function field(f, id){ return $('plist').querySelector('input[data-f="' + f + '"][data-id="' + id + '"]'); }
   function setField(f, id, v){
@@ -305,7 +329,7 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
     });
   });
 
-  $('q').addEventListener('input', function(){ kw = this.value.trim().toLowerCase(); list(); });
+  $('q').addEventListener('input', function(){ kw = this.value.trim().toLowerCase(); page = 1; list(); });
 
   tabs(); list(); render();
 })();
