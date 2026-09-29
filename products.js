@@ -14,7 +14,7 @@ window.CA_DATA = {
   meta: {
     updatedAt: "2026-09-29",
     // 텔레그램 중계 주소 (Google Apps Script 웹 앱 URL). 설정 방법은 _setup/텔레그램_연동_가이드.md
-    telegramRelayUrl: "",
+    telegramRelayUrl: "https://script.google.com/macros/s/AKfycbxaX_k7qmhJXAl4RZeLBHp705oQxI2c_qXqzoo_HqP92HHGRh6iMliPNWwwo0YxaK_USw/exec",
 
     company: {
       name: "클라우드에어",
