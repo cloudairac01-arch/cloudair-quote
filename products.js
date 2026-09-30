@@ -16,7 +16,7 @@ window.CA_DATA = {
     // 텔레그램 중계 주소 (Google Apps Script 웹 앱 URL). 설정 방법은 _setup/텔레그램_연동_가이드.md
     telegramRelayUrl: "https://script.google.com/macros/s/AKfycbxaX_k7qmhJXAl4RZeLBHp705oQxI2c_qXqzoo_HqP92HHGRh6iMliPNWwwo0YxaK_USw/exec",
     // Cloudflare Turnstile 사이트 키 (공개 값). 비워두면 사람 확인 없이 동작
-    turnstileSiteKey: "",
+    turnstileSiteKey: "0x4AAAAAAFJspvE_qiH9bbae",
 
     company: {
       name: "클라우드에어",
