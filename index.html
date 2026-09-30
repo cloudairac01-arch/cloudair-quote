@@ -108,6 +108,7 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
 .fg{margin-top:10px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .send{width:100%;padding:13px;margin-top:16px}
+.ts{margin-top:14px;min-height:65px}
 .msg{font-size:13px;line-height:1.6;color:var(--ink);background:var(--soft);border-radius:var(--r);padding:10px 12px;margin-top:12px}
 
 .foot{border-top:1px solid var(--line);background:#fff}
@@ -154,6 +155,7 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
       <div class="fg"><label class="lb" for="cMail">이메일</label><input id="cMail" type="email" placeholder="name@example.ac.kr" autocomplete="email"></div>
       <div class="fg"><label class="lb" for="cTel">연락처 (선택)</label><input id="cTel" placeholder="010-0000-0000" autocomplete="tel"></div>
       <div class="hp" aria-hidden="true"><input id="cWeb" tabindex="-1" autocomplete="off"></div>
+      <div id="tsBox" class="ts" hidden></div>
       <button type="submit" class="btn-dark send" id="btnSend">구매 요청 보내기</button>
       <div id="msg" class="msg" hidden></div>
     </form>
@@ -292,6 +294,21 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
     delete cart[b.dataset.del]; list(); render();
   });
 
+  /* 사람 확인 (Cloudflare Turnstile) — products.js 에 사이트 키가 있을 때만 */
+  var TS_KEY = M.turnstileSiteKey || '', tsId = null;
+  if(TS_KEY){
+    $('tsBox').hidden = false;
+    window.__caTsReady = function(){
+      tsId = window.turnstile.render('#tsBox', { sitekey: TS_KEY, language: 'ko', size: 'flexible', theme: 'light' });
+    };
+    var sc = document.createElement('script');
+    sc.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=__caTsReady';
+    sc.async = true; sc.defer = true;
+    document.head.appendChild(sc);
+  }
+  function tsToken(){ return (TS_KEY && window.turnstile && tsId != null) ? window.turnstile.getResponse(tsId) || '' : ''; }
+  function tsReset(){ if(TS_KEY && window.turnstile && tsId != null) window.turnstile.reset(tsId); }
+
   /* 요청 보내기 → 텔레그램 */
   function showMsg(t){ $('msg').hidden = false; $('msg').textContent = t; }
   function hideMsg(){ $('msg').hidden = true; }
@@ -305,7 +322,11 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
     else if(!c.name) m = '성명을 입력해 주세요.';
     else if(!c.org) m = '소속을 입력해 주세요.';
     else if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.email)) m = '이메일 주소를 확인해 주세요.';
+    else if(/(https?:\/\/|www\.)/i.test(c.name + ' ' + c.org)) m = '성명·소속에는 링크를 넣을 수 없습니다.';
+    else if(c.tel && !/^[0-9+\-() ]{1,20}$/.test(c.tel)) m = '연락처는 숫자와 - 만 입력해 주세요.';
     if(m){ showMsg(m); return; }
+    var ts = tsToken();
+    if(TS_KEY && !ts){ showMsg('보내기 전에 위의 사람 확인을 완료해 주세요.'); return; }
     if(!M.telegramRelayUrl){ showMsg('지금은 온라인 요청을 받을 수 없습니다. ' + MAIL + ' 로 연락 주세요.'); return; }
 
     var btn = $('btnSend'), ctrl = window.AbortController ? new AbortController() : null;
@@ -314,18 +335,23 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
     fetch(M.telegramRelayUrl, {
       method: 'POST',
       body: JSON.stringify({
-        hp: $('cWeb').value, name: c.name, org: c.org, email: c.email, tel: c.tel,
+        hp: $('cWeb').value, ts: ts, name: c.name, org: c.org, email: c.email, tel: c.tel,
         items: L.map(function(l){ return { name: l.p.name, plan: l.plan, qty: l.qty, months: l.mo }; })
       }),
       signal: ctrl ? ctrl.signal : undefined
     }).then(function(r){ return r.json(); }).then(function(j){
-      if(!j || !j.ok) throw new Error('fail');
+      if(!j || !j.ok) throw new Error((j && j.error) || 'fail');
       cart = {}; list(); render();
       showMsg('요청이 접수되었습니다. 담당자가 확인 후 ' + c.email + ' 로 연락드리겠습니다.');
-    }).catch(function(){
-      showMsg('요청을 보내지 못했습니다. 잠시 후 다시 시도하시거나 ' + MAIL + ' 로 연락 주세요.');
+    }).catch(function(err){
+      var code = err && err.message;
+      showMsg(
+        code === 'captcha' ? '사람 확인이 만료되었습니다. 다시 확인한 뒤 보내주세요.' :
+        code === 'invalid' ? '입력 내용을 다시 확인해 주세요. 링크나 목록에 없는 상품은 보낼 수 없습니다.' :
+        code === 'busy'    ? '지금 요청이 많아 잠시 받을 수 없습니다. 몇 분 뒤 다시 보내주세요.' :
+        '요청을 보내지 못했습니다. 잠시 후 다시 시도하시거나 ' + MAIL + ' 로 연락 주세요.');
     }).then(function(){
-      clearTimeout(timer); btn.disabled = false; btn.textContent = '구매 요청 보내기';
+      clearTimeout(timer); tsReset(); btn.disabled = false; btn.textContent = '구매 요청 보내기';
     });
   });
 
