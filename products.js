@@ -36,7 +36,7 @@ window.CA_DATA = {
     { id: "chatgpt", logo: "logos/chatgpt.webp", name: "ChatGPT", vendor: "OpenAI", category: "생성형 AI",
       use: "범용 대화·문서 작성·데이터 분석·이미지 생성", status: "sale",
       account: "이메일 또는 구글·MS·애플 계정",
-      plans: ["Go", "Plus", "Pro (5x)", "Pro (20x)", "Business (좌석)"] },
+      plans: ["Go", "Plus", "Pro 100", "Pro 200", "Pro 500", "Business (좌석)"] },
 
     { id: "claude", logo: "logos/claude.svg", name: "Claude", vendor: "Anthropic", category: "생성형 AI",
       use: "장문 문서 분석·글쓰기·코딩 (Claude Code 포함)", status: "sale",
@@ -114,7 +114,7 @@ window.CA_DATA = {
     { id: "elevenlabs", logo: "logos/elevenlabs.webp", name: "ElevenLabs", vendor: "ElevenLabs", category: "음성·음악",
       use: "TTS·음성 복제·영상 더빙", status: "sale",
       account: "이메일 또는 구글 계정",
-      plans: ["Starter", "Creator", "Pro", "Scale"] },
+      plans: ["Starter", "Creator", "Pro", "Scale", "Business"] },
 
     { id: "suno", logo: "logos/suno.webp", name: "Suno", vendor: "Suno", category: "음성·음악",
       use: "AI 작곡·보컬 생성", status: "sale",
@@ -133,7 +133,7 @@ window.CA_DATA = {
 
     { id: "udio", logo: "logos/udio.svg", name: "Udio", vendor: "Udio", category: "음성·음악",
       use: "AI 작곡", status: "sale",
-      account: "이메일 또는 구글 계정",
+      account: "이메일 또는 구글 계정", note: "UMG 합의 이후 다운로드 기능이 비활성화되어 있으니 구매 전 확인",
       plans: ["Standard", "Pro"] },
 
     /* ── 5. 회의록·STT ──────────────────────────── */
@@ -166,12 +166,12 @@ window.CA_DATA = {
     { id: "elicit", logo: "logos/elicit.webp", name: "Elicit", vendor: "Elicit", category: "학술·연구",
       use: "논문 검색·데이터 표 자동 추출", status: "sale",
       account: "이메일 또는 구글 계정",
-      plans: ["Pro", "Scale"] },
+      plans: ["Pro (Industry)", "Scale (Industry)", "Plus (Academic)", "Pro (Academic)", "Scale (Academic)"] },
 
     { id: "consensus", logo: "logos/consensus.webp", name: "Consensus", vendor: "Consensus", category: "학술·연구",
       use: "논문 근거 기반 질의응답", status: "sale",
       account: "이메일 또는 구글 계정", note: "학생 할인은 학교 이메일 인증 필요 (.ac.kr 인정 여부 확인)",
-      plans: ["Pro", "Teams (좌석)"] },
+      plans: ["Pro", "Teams (좌석)", "Deep"] },
 
     { id: "scispace", logo: "logos/scispace.webp", name: "SciSpace", vendor: "SciSpace", category: "학술·연구",
       use: "논문 읽기·번역·수식 설명", status: "sale",
@@ -249,7 +249,7 @@ window.CA_DATA = {
     { id: "windsurf", logo: "logos/windsurf.svg", name: "Windsurf", vendor: "Cognition", category: "코딩·개발",
       use: "AI 코드 에디터", status: "sale",
       account: "이메일 또는 구글 계정", note: "학생 할인은 .edu 인증 필요 (.ac.kr 인정 여부 확인) · Teams는 팀 기본료 별도",
-      plans: ["Pro", "Teams (사용자)"] },
+      plans: ["Pro", "Max", "Teams (사용자)"] },
 
     { id: "replit", logo: "logos/replit.svg", name: "Replit", vendor: "Replit", category: "코딩·개발",
       use: "클라우드 IDE + AI 앱 생성", status: "sale",
