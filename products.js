@@ -12,7 +12,7 @@
  */
 window.CA_DATA = {
   meta: {
-    updatedAt: "2026-09-29",
+    updatedAt: "2026-10-01",
     // 텔레그램 중계 주소 (Google Apps Script 웹 앱 URL). 설정 방법은 _setup/텔레그램_연동_가이드.md
     telegramRelayUrl: "https://script.google.com/macros/s/AKfycbxaX_k7qmhJXAl4RZeLBHp705oQxI2c_qXqzoo_HqP92HHGRh6iMliPNWwwo0YxaK_USw/exec",
     // Cloudflare Turnstile 사이트 키 (공개 값). 비워두면 사람 확인 없이 동작
@@ -39,24 +39,24 @@ window.CA_DATA = {
       plans: ["Go", "Plus", "Pro (5x)", "Pro (20x)", "Business (좌석)"] },
 
     { id: "claude", logo: "logos/claude.svg", name: "Claude", vendor: "Anthropic", category: "생성형 AI",
-      use: "장문 문서 분석·글쓰기·코딩", status: "sale",
-      account: "이메일 또는 구글 계정 · 휴대폰 SMS 인증",
-      plans: ["Pro", "Max (5x)", "Max (20x)", "Team Standard (좌석)", "Team Premium (좌석)"] },
+      use: "장문 문서 분석·글쓰기·코딩 (Claude Code 포함)", status: "sale",
+      account: "이메일 또는 구글 계정 · 휴대폰 SMS 인증", note: "Claude Code는 Pro·Max·Team 구독에 포함됩니다",
+      plans: ["Pro", "Max 5x", "Max 20x", "Team Standard (좌석)", "Team Premium (좌석)"] },
 
     { id: "gemini", logo: "logos/gemini.svg", name: "Gemini", vendor: "Google", category: "생성형 AI",
       use: "범용 대화 · Veo 영상 · NotebookLM · 드라이브 연동", status: "prereq",
       account: "구글 계정 필수", note: "학교 구글 계정(.ac.kr)은 기관 관리자 정책으로 개인 구독이 막힐 수 있습니다",
-      plans: ["AI Plus", "AI Pro", "AI Ultra", "AI Ultra (상위)"] },
+      plans: ["Google AI Plus", "Google AI Pro", "Google AI Ultra 5x", "Google AI Ultra 20x"] },
 
     { id: "perplexity", logo: "logos/perplexity.svg", name: "Perplexity", vendor: "Perplexity AI", category: "생성형 AI",
       use: "출처 기반 AI 검색·리서치", status: "sale",
       account: "이메일 또는 구글·애플 계정",
       plans: ["Pro", "Enterprise Pro (좌석)", "Max"] },
 
-    { id: "ms-copilot", logo: "logos/ms-copilot.svg", name: "Microsoft Copilot", vendor: "Microsoft", category: "생성형 AI",
-      use: "범용 대화 + Word·Excel·PowerPoint 연동", status: "prereq",
-      account: "Microsoft 계정 필수", note: "기업 플랜은 조직 도메인이 필요합니다",
-      plans: ["Microsoft 365 Premium", "Copilot Business (좌석)"] },
+    { id: "grok", logo: "logos/grok.svg", name: "Grok", vendor: "xAI", category: "생성형 AI",
+      use: "범용 대화·실시간 X 검색·이미지/영상 생성", status: "sale",
+      account: "X 계정 또는 이메일·구글·애플 계정", note: "X Premium+ 구독자는 Grok 일부 기능이 포함되어 있으니 중복 구매 확인",
+      plans: ["SuperGrok Lite", "SuperGrok", "SuperGrok Plus", "SuperGrok Heavy", "SuperGrok Business (좌석)"] },
 
     { id: "codex", logo: "logos/codex.svg", name: "Codex", vendor: "OpenAI", category: "코딩·개발",
       use: "코드 생성·리팩터링 에이전트", status: "bundle_only", altId: "chatgpt",
@@ -87,7 +87,7 @@ window.CA_DATA = {
     { id: "recraft", logo: "logos/recraft.webp", name: "Recraft", vendor: "Recraft", category: "이미지 생성",
       use: "벡터(SVG) 출력 — 로고·아이콘·브랜드", status: "sale",
       account: "이메일 또는 구글 계정",
-      plans: ["Basic", "Pro", "Pro (상위)", "Teams (좌석)"] },
+      plans: ["Basic (1,000크레딧)", "Pro (2,000크레딧)", "Pro (4,000크레딧)", "Teams (좌석·2,000크레딧)"] },
 
     /* ── 3. 영상 생성 ───────────────────────────── */
     { id: "sora", logo: "logos/sora.svg", name: "Sora", vendor: "OpenAI", category: "영상 생성",
@@ -98,11 +98,11 @@ window.CA_DATA = {
     { id: "runway", logo: "logos/runway.webp", name: "Runway", vendor: "Runway", category: "영상 생성",
       use: "영상 생성 + 편집 + VFX", status: "sale",
       account: "이메일 또는 구글 계정",
-      plans: ["Standard", "Pro", "Unlimited"] },
+      plans: ["Standard", "Pro", "Max (구 Unlimited)"] },
 
     { id: "kling", logo: "logos/kling.svg", name: "Kling AI", vendor: "Kuaishou", category: "영상 생성",
-      use: "이미지 → 영상 생성", status: "review",
-      account: "이메일 또는 휴대폰 인증", note: "국내 휴대폰 번호 인증 가능 여부 확인 중",
+      use: "텍스트·이미지 → 영상 생성", status: "sale",
+      account: "이메일 또는 구글 계정", note: "중국 서비스 — 학교·기관 보안 정책 확인 필요",
       plans: ["Standard", "Pro", "Premier"] },
 
     { id: "heygen", logo: "logos/heygen.webp", name: "HeyGen", vendor: "HeyGen", category: "영상 생성",
@@ -150,7 +150,7 @@ window.CA_DATA = {
     { id: "fireflies", logo: "logos/fireflies.webp", name: "Fireflies.ai", vendor: "Fireflies", category: "회의록·STT",
       use: "회의 자동 참석·녹음·요약", status: "prereq",
       account: "구글 또는 Microsoft 계정 필수", note: "캘린더 접근 권한 승인이 필요합니다",
-      plans: ["Pro (좌석)", "Business (좌석)", "Enterprise (좌석)"] },
+      plans: ["Pro (좌석)", "Business (좌석)"] },
 
     { id: "daglo", logo: "logos/daglo.webp", name: "다글로", vendor: "액션파워", category: "회의록·STT",
       use: "한국어 STT·자막 생성", status: "sale",
@@ -158,9 +158,9 @@ window.CA_DATA = {
       plans: ["Pro", "Premium", "Team (좌석)"] },
 
     { id: "granola", logo: "logos/granola.webp", name: "Granola", vendor: "Granola", category: "회의록·STT",
-      use: "노트 기반 회의 요약", status: "review",
-      account: "이메일 또는 구글 계정", note: "데스크톱 앱 설치 필요 · macOS 전용 여부 확인 중",
-      plans: ["Business (사용자)", "Enterprise (사용자)"] },
+      use: "노트 기반 회의 요약", status: "sale",
+      account: "이메일 또는 구글 계정", note: "데스크톱 앱 설치 필요 · macOS 전용 여부 확인",
+      plans: ["Business (사용자)"] },
 
     /* ── 6. 학술·연구 ───────────────────────────── */
     { id: "elicit", logo: "logos/elicit.webp", name: "Elicit", vendor: "Elicit", category: "학술·연구",
@@ -171,7 +171,7 @@ window.CA_DATA = {
     { id: "consensus", logo: "logos/consensus.webp", name: "Consensus", vendor: "Consensus", category: "학술·연구",
       use: "논문 근거 기반 질의응답", status: "sale",
       account: "이메일 또는 구글 계정", note: "학생 할인은 학교 이메일 인증 필요 (.ac.kr 인정 여부 확인)",
-      plans: ["Premium (연납 기준)", "Teams (좌석·연납)"] },
+      plans: ["Pro", "Teams (좌석)"] },
 
     { id: "scispace", logo: "logos/scispace.webp", name: "SciSpace", vendor: "SciSpace", category: "학술·연구",
       use: "논문 읽기·번역·수식 설명", status: "sale",
@@ -181,13 +181,13 @@ window.CA_DATA = {
     { id: "scite", logo: "logos/scite.webp", name: "Scite", vendor: "Scite", category: "학술·연구",
       use: "인용 맥락(지지/반박) 분석", status: "sale",
       account: "이메일",
-      plans: ["Basic (연납 기준)", "Pro (연납 기준)"] },
+      plans: ["Basic", "Pro"] },
 
     /* ── 7. 번역·글쓰기 ─────────────────────────── */
     { id: "deepl", logo: "logos/deepl.svg", name: "DeepL", vendor: "DeepL", category: "번역·글쓰기",
       use: "고품질 번역·문서 서식 유지 번역", status: "sale",
-      account: "이메일 · EUR 청구",
-      plans: ["Individual (연납 기준)", "Team (좌석)", "Business (좌석)"] },
+      account: "이메일 · USD 청구",
+      plans: ["Individual (연납 기준)", "Team (좌석·연납 기준)", "Business (좌석·연납 기준)"] },
 
     { id: "grammarly", logo: "logos/grammarly.svg", name: "Grammarly", vendor: "Grammarly", category: "번역·글쓰기",
       use: "영문 교정·문체 개선", status: "sale",
@@ -197,18 +197,18 @@ window.CA_DATA = {
     { id: "quillbot", logo: "logos/quillbot.webp", name: "QuillBot", vendor: "QuillBot", category: "번역·글쓰기",
       use: "패러프레이징·요약", status: "sale",
       account: "이메일 또는 구글 계정", note: "학생가는 .edu 인증 필요 (.ac.kr 인정 여부 확인)",
-      plans: ["Premium (월납)", "Premium (연납 기준)"] },
+      plans: ["Premium", "Student (연납 기준)"] },
 
     { id: "wordvice", logo: "logos/wordvice.webp", name: "Wordvice AI", vendor: "Wordvice", category: "번역·글쓰기",
       use: "학술 영문 교정", status: "sale",
-      account: "이메일",
-      plans: ["Premium", "Premium PRO", "Team"] },
+      account: "이메일 · 국내 카드 원화 결제",
+      plans: ["Premium", "Premium PRO"] },
 
     /* ── 8. 문서·생산성 ─────────────────────────── */
-    { id: "m365-copilot", logo: "logos/m365-copilot.svg", name: "Microsoft 365 Copilot", vendor: "Microsoft", category: "문서·생산성",
-      use: "Word·Excel·PowerPoint 내 AI", status: "prereq",
-      account: "Microsoft 계정 필수", note: "기업 플랜은 조직 도메인이 필요합니다",
-      plans: ["Business Standard + Copilot (좌석)", "Business Premium + Copilot (좌석)", "Copilot 애드온 (좌석)"] },
+    { id: "m365-copilot", logo: "logos/m365-copilot.svg", name: "Microsoft 365", vendor: "Microsoft", category: "문서·생산성",
+      use: "Word·Excel·PowerPoint + Copilot AI (기업용)", status: "prereq",
+      account: "Microsoft 계정 필수", note: "기업 플랜은 조직 도메인이 필요합니다 · 기존 M365 구독자는 Copilot 애드온만 추가 가능",
+      plans: ["Business Basic (좌석)", "Apps for Business (좌석)", "Business Standard + Copilot (좌석)", "Business Premium + Copilot (좌석)"] },
 
     { id: "notion-ai", logo: "logos/notion-ai.svg", name: "Notion AI", vendor: "Notion", category: "문서·생산성",
       use: "노트·위키·데이터베이스 + AI", status: "sale",
@@ -236,6 +236,11 @@ window.CA_DATA = {
       account: "GitHub 계정 필수", note: "학생은 Student Developer Pack 으로 Pro 무상 — 재학증빙 필요",
       plans: ["Pro", "Pro+", "Max"] },
 
+    { id: "ms-copilot", logo: "logos/ms-copilot.svg", name: "Microsoft Copilot", vendor: "Microsoft", category: "코딩·개발",
+      use: "범용 대화 + Word·Excel·PowerPoint 연동 (개인용)", status: "sale",
+      account: "Microsoft 계정 필수", note: "기업용 Copilot은 Microsoft 365 상품에서 선택하세요",
+      plans: ["Microsoft 365 Premium"] },
+
     { id: "cursor", logo: "logos/cursor.svg", name: "Cursor", vendor: "Anysphere", category: "코딩·개발",
       use: "AI 코드 에디터", status: "sale",
       account: "이메일 또는 깃허브·구글 계정 · 데스크톱 설치 필요",
@@ -243,8 +248,8 @@ window.CA_DATA = {
 
     { id: "windsurf", logo: "logos/windsurf.svg", name: "Windsurf", vendor: "Cognition", category: "코딩·개발",
       use: "AI 코드 에디터", status: "sale",
-      account: "이메일 또는 구글 계정", note: "학생 할인은 .edu 인증 필요 (.ac.kr 인정 여부 확인)",
-      plans: ["Pro", "Max", "Teams (사용자)"] },
+      account: "이메일 또는 구글 계정", note: "학생 할인은 .edu 인증 필요 (.ac.kr 인정 여부 확인) · Teams는 팀 기본료 별도",
+      plans: ["Pro", "Teams (사용자)"] },
 
     { id: "replit", logo: "logos/replit.svg", name: "Replit", vendor: "Replit", category: "코딩·개발",
       use: "클라우드 IDE + AI 앱 생성", status: "sale",
