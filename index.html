@@ -108,6 +108,14 @@ textarea{display:block;min-height:92px;resize:vertical;line-height:1.5}
 .lb{display:block;font-size:12.5px;color:var(--ink-2);margin:0 0 5px}
 .fg{margin-top:10px}
 .cnt{font-size:11.5px;color:var(--ink-3);text-align:right;margin-top:4px;font-variant-numeric:tabular-nums}
+.agr{margin-top:14px}
+.agr-row{display:flex;align-items:center;gap:8px}
+.agr-row input{width:16px;height:16px;margin:0;padding:0;flex:0 0 auto;accent-color:var(--ink);cursor:pointer}
+.agr-row label{flex:1;font-size:13px;cursor:pointer}
+.agr-row label em{font-style:normal;color:#c0392b}
+.agr-tg{font-size:12px;padding:3px 9px;color:var(--ink-2)}
+.agr-pv{font-size:12px;color:var(--ink-2);line-height:1.65;background:var(--soft);border-radius:var(--r);padding:10px 12px;margin-top:8px}
+.agr-pv ul{margin:6px 0;padding-left:16px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .send{width:100%;padding:13px;margin-top:16px}
 .ts{margin-top:14px;min-height:65px}
@@ -158,6 +166,22 @@ textarea{display:block;min-height:92px;resize:vertical;line-height:1.5}
       <div class="fg"><label class="lb" for="cTel">연락처 (선택)</label><input id="cTel" placeholder="010-0000-0000" autocomplete="tel"></div>
       <div class="fg"><label class="lb" for="cStart">이용 시작 희망일</label><input id="cStart" type="date" required></div>
       <div class="fg"><label class="lb" for="cMemo">문의사항 · 목록에 없는 AI 요청 (선택)</label><textarea id="cMemo" maxlength="500" rows="4" placeholder="목록에 없는 AI나 궁금한 점을 적어 주세요" autocomplete="off"></textarea><div class="cnt" id="memoCnt" aria-live="polite">0 / 500</div></div>
+      <div class="agr">
+        <div class="agr-row">
+          <input type="checkbox" id="cAgree">
+          <label for="cAgree">개인정보 수집·이용 동의 <em>(필수)</em></label>
+          <button type="button" class="agr-tg" id="agrTg" aria-expanded="false" aria-controls="agrPv">보기</button>
+        </div>
+        <div class="agr-pv" id="agrPv" hidden>
+          CloudAir(클라우드에어)는 견적 요청 처리를 위해 아래와 같이 개인정보를 수집·이용합니다.
+          <ul>
+            <li>수집 항목: 성명, 소속, 이메일 (선택: 연락처, 문의 내용)</li>
+            <li>수집 목적: 견적 요청 접수 및 응대, 견적서 등 서류 발송</li>
+            <li>보유 기간: 문의 처리 완료 후 1년</li>
+          </ul>
+          동의를 거부할 수 있으며, 거부 시 견적 요청이 제한됩니다.
+        </div>
+      </div>
       <div class="hp" aria-hidden="true"><input id="cWeb" tabindex="-1" autocomplete="off"></div>
       <div id="tsBox" class="ts" hidden></div>
       <button type="submit" class="btn-dark send" id="btnSend">구매 요청 보내기</button>
@@ -336,6 +360,13 @@ textarea{display:block;min-height:92px;resize:vertical;line-height:1.5}
   function memoCount(){ $('memoCnt').textContent = $('cMemo').value.length + ' / ' + MEMO_MAX; }
   $('cMemo').addEventListener('input', memoCount);
 
+  /* 개인정보 동의 — 전문은 '보기'를 눌렀을 때만 펼침 */
+  $('agrTg').addEventListener('click', function(){
+    var open = $('agrPv').hidden;
+    $('agrPv').hidden = !open; this.textContent = open ? '접기' : '보기'; this.setAttribute('aria-expanded', open);
+  });
+  $('cAgree').addEventListener('change', hideMsg);
+
   /* 요청 보내기 → 텔레그램 */
   function showMsg(t){ $('msg').hidden = false; $('msg').textContent = t; }
   function hideMsg(){ $('msg').hidden = true; }
@@ -357,6 +388,7 @@ textarea{display:block;min-height:92px;resize:vertical;line-height:1.5}
     else if(!validStart(c.start)) m = '이용 시작 희망일을 다시 골라 주세요.';
     else if(c.memo.length > MEMO_MAX) m = '문의사항은 ' + MEMO_MAX + '자까지 적을 수 있습니다.';
     else if(c.memo && hasLink(c.memo)) m = '문의사항에는 링크를 넣을 수 없습니다.';
+    else if(!$('cAgree').checked) m = '개인정보 수집·이용에 동의해 주세요.';
     if(m){ showMsg(m); return; }
     var ts = tsToken();
     if(TS_KEY && !ts){ showMsg('보내기 전에 위의 사람 확인을 완료해 주세요.'); return; }
@@ -368,14 +400,14 @@ textarea{display:block;min-height:92px;resize:vertical;line-height:1.5}
     fetch(M.telegramRelayUrl, {
       method: 'POST',
       body: JSON.stringify({
-        hp: $('cWeb').value, ts: ts, name: c.name, org: c.org, email: c.email, tel: c.tel, start: c.start, memo: c.memo,
+        hp: $('cWeb').value, ts: ts, name: c.name, org: c.org, email: c.email, tel: c.tel, start: c.start, memo: c.memo, agree: $('cAgree').checked,
         items: L.map(function(l){ return { name: l.p.name, plan: l.plan, qty: l.qty, months: l.mo }; })
       }),
       signal: ctrl ? ctrl.signal : undefined
     }).then(function(r){ return r.json(); }).then(function(j){
       if(!j || !j.ok) throw new Error(((j && j.error) || 'fail') + (j && j.field ? ':' + j.field : ''));
       cart = {}; list(); render();
-      $('cMemo').value = ''; $('cStart').value = ''; memoCount();
+      $('cMemo').value = ''; $('cStart').value = ''; $('cAgree').checked = false; memoCount();
       showMsg('요청이 접수되었습니다. 담당자가 확인 후 ' + c.email + ' 로 연락드리겠습니다.');
     }).catch(function(err){
       var code = String((err && err.message) || ''), fld = code.split(':')[1] || '';
@@ -384,6 +416,7 @@ textarea{display:block;min-height:92px;resize:vertical;line-height:1.5}
         code === 'captcha' ? '사람 확인이 만료되었습니다. 다시 확인한 뒤 보내주세요.' :
         code === 'invalid' && fld === 'start' ? '이용 시작 희망일을 다시 골라 주세요.' :
         code === 'invalid' && fld === 'memo'  ? '문의사항을 확인해 주세요. 링크는 넣을 수 없습니다.' :
+        code === 'invalid' && fld === 'agree' ? '개인정보 수집·이용에 동의해 주세요.' :
         code === 'invalid' ? '입력 내용을 다시 확인해 주세요. 링크나 목록에 없는 상품은 보낼 수 없습니다.' :
         code === 'busy'    ? '지금 요청이 많아 잠시 받을 수 없습니다. 몇 분 뒤 다시 보내주세요.' :
         code === 'limit'   ? '같은 이메일로 보낸 요청이 많습니다. 10분 뒤 다시 보내주세요.' :
