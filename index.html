@@ -19,14 +19,15 @@ html,body{margin:0;padding:0}
 body{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   background:var(--bg);color:var(--ink);font-size:15px;line-height:1.55;letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
 h1,h2,h3,p{margin:0}
-button,input,select{font:inherit;color:inherit;letter-spacing:inherit}
+button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
 button{cursor:pointer;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);padding:9px 14px;font-size:14px}
 button:hover{border-color:var(--ink-3)}
 button:disabled{opacity:.55;cursor:default}
 .btn-dark{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
 .btn-dark:hover{background:#000;border-color:#000}
-input,select{background:#fff;border:1px solid var(--line-2);border-radius:var(--r);padding:9px 11px;width:100%;font-size:14px}
-input:focus,select:focus{outline:none;border-color:var(--ink)}
+input,select,textarea{background:#fff;border:1px solid var(--line-2);border-radius:var(--r);padding:9px 11px;width:100%;font-size:14px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ink)}
+textarea{display:block;min-height:92px;resize:vertical;line-height:1.5}
 .wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
 @media(max-width:640px){.wrap{padding:0 16px}}
 
@@ -106,6 +107,7 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .lb{display:block;font-size:12.5px;color:var(--ink-2);margin:0 0 5px}
 .fg{margin-top:10px}
+.cnt{font-size:11.5px;color:var(--ink-3);text-align:right;margin-top:4px;font-variant-numeric:tabular-nums}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .send{width:100%;padding:13px;margin-top:16px}
 .ts{margin-top:14px;min-height:65px}
@@ -154,6 +156,8 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
       </div>
       <div class="fg"><label class="lb" for="cMail">이메일</label><input id="cMail" type="email" placeholder="name@example.ac.kr" autocomplete="email"></div>
       <div class="fg"><label class="lb" for="cTel">연락처 (선택)</label><input id="cTel" placeholder="010-0000-0000" autocomplete="tel"></div>
+      <div class="fg"><label class="lb" for="cStart">이용 시작 희망일</label><input id="cStart" type="date" required></div>
+      <div class="fg"><label class="lb" for="cMemo">문의사항 · 목록에 없는 AI 요청 (선택)</label><textarea id="cMemo" maxlength="500" rows="4" placeholder="목록에 없는 AI나 궁금한 점을 적어 주세요" autocomplete="off"></textarea><div class="cnt" id="memoCnt" aria-live="polite">0 / 500</div></div>
       <div class="hp" aria-hidden="true"><input id="cWeb" tabindex="-1" autocomplete="off"></div>
       <div id="tsBox" class="ts" hidden></div>
       <button type="submit" class="btn-dark send" id="btnSend">구매 요청 보내기</button>
@@ -309,21 +313,50 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
   function tsToken(){ return (TS_KEY && window.turnstile && tsId != null) ? window.turnstile.getResponse(tsId) || '' : ''; }
   function tsReset(){ if(TS_KEY && window.turnstile && tsId != null) window.turnstile.reset(tsId); }
 
+  /* 이용 시작 희망일 — 한국 시간 기준 오늘 ~ 6개월 */
+  var START_DAYS = 183, MEMO_MAX = 500;
+  function kstDay(add){ return new Date(Date.now() + 9 * 3600e3 + (add || 0) * 864e5).toISOString().slice(0, 10); }
+  function setStartRange(){ $('cStart').min = kstDay(0); $('cStart').max = kstDay(START_DAYS); }
+  setStartRange();
+  function validStart(s){ return /^\d{4}-\d{2}-\d{2}$/.test(s) && s >= kstDay(0) && s <= kstDay(START_DAYS); }
+
+  /* 문의사항 — 화면에 다시 그리지 않고(textContent·innerHTML 미사용) 값만 정리해서 보냅니다.
+     제어문자·보이지 않는 문자·글자 방향 조작 문자를 지우고, 링크는 받지 않습니다. 같은 검사를 중계(Code.gs)에서도 다시 합니다. */
+  var LINK_RE = /(https?:\/\/|www\.|t\.me\/|[a-z0-9-]+\.(com|net|org|io|kr|co|me|xyz|ly|app|site|link|click|top|info|biz)\b)/i;
+  function cleanMemo(v){
+    v = String(v || '');
+    if(v.normalize) v = v.normalize('NFC');
+    return v.replace(/\r\n?/g, '\n').replace(/\t/g, ' ')
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '')
+      .replace(/[\u00AD\u034F\u061C\u115F\u1160\u180E\u200B-\u200F\u202A-\u202E\u2060-\u206F\u3164\uFE00-\uFE0F\uFEFF\uFFA0]/g, '')
+      .split('\n').map(function(l){ return l.replace(/\s+$/, ''); }).join('\n')
+      .replace(/\n{3,}/g, '\n\n').trim();
+  }
+  function hasLink(v){ return LINK_RE.test(v.normalize ? v.normalize('NFKC') : v); }
+  function memoCount(){ $('memoCnt').textContent = $('cMemo').value.length + ' / ' + MEMO_MAX; }
+  $('cMemo').addEventListener('input', memoCount);
+
   /* 요청 보내기 → 텔레그램 */
   function showMsg(t){ $('msg').hidden = false; $('msg').textContent = t; }
   function hideMsg(){ $('msg').hidden = true; }
-  ['cName', 'cOrg', 'cMail'].forEach(function(id){ $(id).addEventListener('input', hideMsg); });
+  ['cName', 'cOrg', 'cMail', 'cStart', 'cMemo'].forEach(function(id){ $(id).addEventListener('input', hideMsg); });
 
   $('reqForm').addEventListener('submit', function(e){
     e.preventDefault();
-    var L = lines(), c = { name: $('cName').value.trim(), org: $('cOrg').value.trim(), email: $('cMail').value.trim(), tel: $('cTel').value.trim() };
+    setStartRange();
+    var L = lines(), c = { name: $('cName').value.trim(), org: $('cOrg').value.trim(), email: $('cMail').value.trim(), tel: $('cTel').value.trim(),
+      start: $('cStart').value, memo: cleanMemo($('cMemo').value) };
     var m = '';
-    if(!L.length) m = '요청할 서비스를 먼저 담아 주세요.';
+    if(!L.length && c.memo.length < 2) m = '요청할 서비스를 담거나 문의사항을 적어 주세요.';
     else if(!c.name) m = '성명을 입력해 주세요.';
     else if(!c.org) m = '소속을 입력해 주세요.';
     else if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.email)) m = '이메일 주소를 확인해 주세요.';
     else if(/(https?:\/\/|www\.)/i.test(c.name + ' ' + c.org)) m = '성명·소속에는 링크를 넣을 수 없습니다.';
     else if(c.tel && !/^[0-9+\-() ]{1,20}$/.test(c.tel)) m = '연락처는 숫자와 - 만 입력해 주세요.';
+    else if(!c.start) m = '이용 시작 희망일을 골라 주세요.';
+    else if(!validStart(c.start)) m = '이용 시작 희망일을 다시 골라 주세요.';
+    else if(c.memo.length > MEMO_MAX) m = '문의사항은 ' + MEMO_MAX + '자까지 적을 수 있습니다.';
+    else if(c.memo && hasLink(c.memo)) m = '문의사항에는 링크를 넣을 수 없습니다.';
     if(m){ showMsg(m); return; }
     var ts = tsToken();
     if(TS_KEY && !ts){ showMsg('보내기 전에 위의 사람 확인을 완료해 주세요.'); return; }
@@ -335,20 +368,25 @@ input:focus,select:focus{outline:none;border-color:var(--ink)}
     fetch(M.telegramRelayUrl, {
       method: 'POST',
       body: JSON.stringify({
-        hp: $('cWeb').value, ts: ts, name: c.name, org: c.org, email: c.email, tel: c.tel,
+        hp: $('cWeb').value, ts: ts, name: c.name, org: c.org, email: c.email, tel: c.tel, start: c.start, memo: c.memo,
         items: L.map(function(l){ return { name: l.p.name, plan: l.plan, qty: l.qty, months: l.mo }; })
       }),
       signal: ctrl ? ctrl.signal : undefined
     }).then(function(r){ return r.json(); }).then(function(j){
-      if(!j || !j.ok) throw new Error((j && j.error) || 'fail');
+      if(!j || !j.ok) throw new Error(((j && j.error) || 'fail') + (j && j.field ? ':' + j.field : ''));
       cart = {}; list(); render();
+      $('cMemo').value = ''; $('cStart').value = ''; memoCount();
       showMsg('요청이 접수되었습니다. 담당자가 확인 후 ' + c.email + ' 로 연락드리겠습니다.');
     }).catch(function(err){
-      var code = err && err.message;
+      var code = String((err && err.message) || ''), fld = code.split(':')[1] || '';
+      code = code.split(':')[0];
       showMsg(
         code === 'captcha' ? '사람 확인이 만료되었습니다. 다시 확인한 뒤 보내주세요.' :
+        code === 'invalid' && fld === 'start' ? '이용 시작 희망일을 다시 골라 주세요.' :
+        code === 'invalid' && fld === 'memo'  ? '문의사항을 확인해 주세요. 링크는 넣을 수 없습니다.' :
         code === 'invalid' ? '입력 내용을 다시 확인해 주세요. 링크나 목록에 없는 상품은 보낼 수 없습니다.' :
         code === 'busy'    ? '지금 요청이 많아 잠시 받을 수 없습니다. 몇 분 뒤 다시 보내주세요.' :
+        code === 'limit'   ? '같은 이메일로 보낸 요청이 많습니다. 10분 뒤 다시 보내주세요.' :
         '요청을 보내지 못했습니다. 잠시 후 다시 시도하시거나 ' + MAIL + ' 로 연락 주세요.');
     }).then(function(){
       clearTimeout(timer); tsReset(); btn.disabled = false; btn.textContent = '구매 요청 보내기';
